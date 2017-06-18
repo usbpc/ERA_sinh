@@ -20,7 +20,7 @@ my_sinh:
 	fstsw ax				;store x87 FPU SW in ax
 	sahf					;load EFLAGS from ah
 						;important for here CF = C0 and ZF = C3
-	jbe end					;jump if (CF or ZF) = 1
+	jbe .end				;jump if (CF or ZF) = 1
 
 	fld st0					;st0 = x, st1 = x, st2 = precision
 						
@@ -40,7 +40,7 @@ my_sinh:
 	fld st3					;previous = x
 						;st0 = previous, st1 = i, st2 = result, st3= 1, st4 = x, st5 = sign, st6 = precision
 	fdivr st6, st0				;precision = x/precision
-loop:			
+.loop:			
 	fincstp					;st7= previous, st0 = i, st1 = result, st2 = 1, st3 = x, st4 = sign, st5 = precision
 	fadd st0, st2				;i++
 	fdecstp					;st0= previous, st1 = i, st2 = result, st3 = 1, st4 = x, st5 = sign, st6 = precision
@@ -56,13 +56,13 @@ loop:
 	fadd st2, st0				;result = result + previous
 
 	fcomi st0, st6				;if previous < precision CF = 1
-	jae loop				;jump if CF = 0
+	jae .loop				;jump if CF = 0
 
 	fincstp
 	fincstp					;st6= previous, st7 = i, st0 = result, st1 = 1, st2 = x, st3 = sign, st4 = precision
 	fmul st0, st3				;st0 = result * sign
 
-end:
+.end:
 	fstp qword [rsp-8]			;save output into memory
 
 	movlps xmm0, [rsp-8]			;load output from memory to xmm0 to return it
