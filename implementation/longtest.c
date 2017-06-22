@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <math.h>
-extern double my_sinh(double x);
+extern double era_sinh(double x);
 double abs(double x) {
 	if (x < 0) {return -x;}
 	return x;
@@ -12,7 +12,7 @@ int main() {
     double maxErrorD = 0;
     int i = 0;
     do {
-        double ms = my_sinh(d);
+        double ms = era_sinh(d);
         double s = sinh(d);
 	double diviation = abs(1-ms/s);
         if (diviation > maxDiviation) {

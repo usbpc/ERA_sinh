@@ -1,13 +1,13 @@
 BITS 64
 
-GLOBAL my_sinh
+GLOBAL era_sinh
 
 section .rodata
 precision:	dq 10000.0			;define constant precision
 
 section .text
 
-my_sinh:
+era_sinh:
 	fstcw word [rsp-10]			;save the x87 Control Word to memory
 
 	fninit					;initialize the x87 FPU
