@@ -2,8 +2,8 @@ BITS 64
 
 GLOBAL era_sinh
 
-section .rodata
-precision:	dq 10000.0			;define constant precision
+;section .rodata
+;precision:	dq 10000.0			;define constant precision
 
 section .text
 
@@ -41,6 +41,10 @@ era_sinh:
 	shl rcx, 2				;now multiply rcx with 4
         add rcx, rax				;add rax to rcx
 	add rcx, 45				;add 45 to rcx, so now rcx = 45+5/8x
+	cmp rcx, 489				;compare rcx with 489
+	jbe .passt				;skip the next line if rcx <= 489
+	mov rcx, 489				;if rcx was bigger set it to 489
+.passt:	
 
 	fld1					;load conatant 1
 						;st0 = 1, st1 = x, st2 = sign, st3 = precision	
