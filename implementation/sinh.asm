@@ -75,7 +75,10 @@ era_sinh:
 
 	;fcomi st0, st6				;if previous < precision CF = 1
 	;jae .loop				;jump if CF = 0
-	loop .loop
+	dec ecx
+	jnz .loop
+	;apperently the loop instruction is slow on modern cpus...
+	;loop .loop
 
 	fincstp
 	fincstp					;st6= previous, st7 = i, st0 = result, st1 = 1, st2 = x, st3 = sign, st4 = precision
