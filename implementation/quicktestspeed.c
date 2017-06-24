@@ -27,7 +27,7 @@ int main() {
     strftime(fname, sizeof(fname), "./Quick_Test_Speed_%Y-%m-%d_%H:%M:%S.csv", gmtime(&now));
     FILE *fp;
     fp = fopen(fname,"w");
-    fprintf(fp, "Test Var,Our Output (in ms),Std Output (in ms),We Took X Ms Longer");
+    fprintf(fp, "Test Var,Our Output (in ms),Std Output (in ms),We Took X Ms Longer\n");
     
     /* critical values are tested here
        710 * 4 * 3 = 8520 */
