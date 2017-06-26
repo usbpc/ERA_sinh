@@ -74,5 +74,5 @@ int main() {
     fclose(fp);
     printf("Worst speed is %e at %e\n", worstSpeed, index);
     /* (Here, we should be able to display 5 and the smallest value that follows 5) */
-    printf("Our two values are %e and %e\n", 0.1234151522532542435, nextafter(0.5, 1.0L));
+    printf("Our two values are %e and %.17g\n", 0.1234151522532542435, nextafter(0.5, 1.0L));
 }
