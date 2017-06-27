@@ -30,7 +30,7 @@ era_sinh:
 						
 	fabs					;st0 = |x|
 
-	fdiv st1, st0				;st1 = x/|x|, eigther 1 or -1
+	fdiv st1, st0				;st1 = x/|x|, either 1 or -1
 	
 	fld st0					;I can only get a 64 Bit Integer out of the FPU with popping, so dublicating x here
 	fistp qword [rsp-8]			;get x as integer into memory
@@ -43,7 +43,9 @@ era_sinh:
 	add rcx, 45				;add 45 to rcx, so now rcx = 45+5/8x
 	cmp rcx, 489				;compare rcx with 489
 	jbe .passt				;skip the next line if rcx <= 489
-	mov rcx, 489				;if rcx was bigger set it to 489
+	mov rcx, 489				;if rcx was bigger set it to 489, this is done so that inputs > 710 don't run forever and still output +/- infinite
+						;in theory we could change it to jump to an alternate end to directly output infinity, the problem with that is we still need to make it the appropriate infinity (+/-) and I'm not sure of a good way to do that.
+						;but it might be, that even a "bad" way is faster than what I'm doing right now, but we need to test that once we have nice tests ready to use."
 .passt:	
 
 	fld1					;load conatant 1
