@@ -1,15 +1,21 @@
-all: test longtest quicktestspeed quicktesterror quicktestboth
+all: sinh.o longtest quicktestspeed quicktesterror quicktestboth longtestboth incrementtestboth selecttest
 
-test: sinh.o test.c
+test: test.c
 	gcc -std=c11 -m64 -o test test.c sinh.o -lm
-longtest: sinh.o longtest.c
+longtest: longtest.c
 	gcc -std=c11 -m64 -o longtest longtest.c sinh.o -lm
-quicktestspeed: sinh.o quicktestspeed.c
-	gcc -std=c11 -m64 -o quicktestspeed quicktestspeed.c sinh.o -lm
-quicktesterror: sinh.o quicktesterror.c
-	gcc -std=c11 -m64 -o quicktesterror quicktesterror.c sinh.o -lm
-quicktestboth: sinh.o quicktestboth.c
-	gcc -std=c11 -m64 -o quicktestboth quicktestboth.c sinh.o -lm
+quicktestspeed: quicktestspeed.c
+	gcc -std=c11 -m64 -o quicktestspeed quicktestspeed.c functions.c -lm
+quicktesterror: quicktesterror.c
+	gcc -std=c11 -m64 -o quicktesterror quicktesterror.c functions.c -lm
+quicktestboth: quicktestboth.c
+	gcc -std=c11 -m64 -o quicktestboth quicktestboth.c functions.c -lm
+longtestboth: longtestboth.c
+	gcc -std=c11 -m64 -o longtestboth longtestboth.c functions.c -lm
+incrementtestboth: incrementtestboth.c
+	gcc -std=c11 -m64 -o incrementtestboth incrementtestboth.c functions.c -lm
+selecttest: selecttest.c
+	gcc -std=c11 -m64 -o selecttest selecttest.c functions.c -lm
 clean:
 	rm sinh.o test longtest
 sinh.o: sinh.asm

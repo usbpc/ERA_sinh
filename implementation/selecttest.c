@@ -13,43 +13,24 @@ int main() {
     such as i, i +- epsilon. */
     double worstSpeed = 0, indexSpeed, worstError = 0, indexError, tmp;
 
+    /* Accessing the input file */
+    FILE *in;
+    in = fopen("SelectionInput.txt", "r");
+
     /* Creating the output file */
     FILE *fp;
-    fp = createFile("Quick_Test_Both_");
+    fp = createFile("Select_Test_");
 
     /*This is the top row of our csv file which will record all tests according to the used
     program's specifications (speed only records speed, error only records error, both records
     both speed and error for standard library and our assembly program's results)*/
     fprintf(fp, "Test Var,Our Output,Std Output,The Deviation Was,");
     fprintf(fp, "Our Output (in ms),Std Output (in ms),We Took X Ms Longer\n");
-    
-    /* Critical values are tested here. There are a total of 1420 * 4 * 3 = 17040 */
-    for (double i = -711; i < 711; i += 0.25) {
 
-        /* critical value i */
-        tmp = i;
-        testCase(tmp, &worstSpeed, &indexSpeed, &worstError, &indexError, fp);
-
-        /* critical value i + epsilon */
-        tmp = nextafter(i, 712);
-        testCase(tmp, &worstSpeed, &indexSpeed, &worstError, &indexError, fp);
-
-        /* critical value i - epsilon */
-        tmp = nextafter(i, -712);
-        testCase(tmp, &worstSpeed, &indexSpeed, &worstError, &indexError, fp);
-    }
-
-    /* 1500 random values between 0 and 712 are tested here */
-    for (int i = 0; i < 1500; i++) {
-        tmp = (double)rand()/(double)(RAND_MAX/712);
-        testCase(tmp, &worstSpeed, &indexSpeed, &worstError, &indexError, fp);
-    }
-
-    /* 1500 random values between -712 and 0 are tested here */
-    for (int i = 0; i < 1500; i++) {
-        tmp = (double)rand()/(double)(RAND_MAX/712);
-        tmp = -tmp;
-        testCase(tmp, &worstSpeed, &indexSpeed, &worstError, &indexError, fp);
+    /* All values in SelectionInput.txt are tested*/
+    char entry[1000];
+    while (fgets(entry, 1000, in)!=NULL) {
+        testCase(strtod(entry, NULL), &worstSpeed, &indexSpeed, &worstError, &indexError, fp);
     }
     /* The file is closed to avoid leaks and to make sure the whole stream is written */
     fclose(fp);

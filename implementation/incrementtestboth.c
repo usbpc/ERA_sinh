@@ -15,7 +15,7 @@ int main() {
 
     /* Creating the output file */
     FILE *fp;
-    fp = createFile("Quick_Test_Both_");
+    fp = createFile("Increment_Test_Both_");
 
     /*This is the top row of our csv file which will record all tests according to the used
     program's specifications (speed only records speed, error only records error, both records
@@ -23,33 +23,13 @@ int main() {
     fprintf(fp, "Test Var,Our Output,Std Output,The Deviation Was,");
     fprintf(fp, "Our Output (in ms),Std Output (in ms),We Took X Ms Longer\n");
     
-    /* Critical values are tested here. There are a total of 1420 * 4 * 3 = 17040 */
-    for (double i = -711; i < 711; i += 0.25) {
+    /*Default value of increment is 0.001. It is checked whether a valid increment is given.*/
+    double j = 0.001;
+    /*if argv[1].isDouble => j = argv[1]*/
 
-        /* critical value i */
-        tmp = i;
-        testCase(tmp, &worstSpeed, &indexSpeed, &worstError, &indexError, fp);
-
-        /* critical value i + epsilon */
-        tmp = nextafter(i, 712);
-        testCase(tmp, &worstSpeed, &indexSpeed, &worstError, &indexError, fp);
-
-        /* critical value i - epsilon */
-        tmp = nextafter(i, -712);
-        testCase(tmp, &worstSpeed, &indexSpeed, &worstError, &indexError, fp);
-    }
-
-    /* 1500 random values between 0 and 712 are tested here */
-    for (int i = 0; i < 1500; i++) {
-        tmp = (double)rand()/(double)(RAND_MAX/712);
-        testCase(tmp, &worstSpeed, &indexSpeed, &worstError, &indexError, fp);
-    }
-
-    /* 1500 random values between -712 and 0 are tested here */
-    for (int i = 0; i < 1500; i++) {
-        tmp = (double)rand()/(double)(RAND_MAX/712);
-        tmp = -tmp;
-        testCase(tmp, &worstSpeed, &indexSpeed, &worstError, &indexError, fp);
+    /*i is incremented by j until 710 and each value of i is tested*/
+    for (double i = -710; i <= 710; i += j) {
+        testCase(i, &worstSpeed, &indexSpeed, &worstError, &indexError, fp);
     }
     /* The file is closed to avoid leaks and to make sure the whole stream is written */
     fclose(fp);

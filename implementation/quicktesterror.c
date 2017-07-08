@@ -1,28 +1,23 @@
-/*Standard libraries that are required for math, output, collecting time from pc, etc.*/
+/*Standard libraries that are required for math, output, etc.*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <time.h>
+#include "functions.h"
 
 /*The assembly program that will be tested and compared against the standard library function*/
 extern double era_sinh(double x);
 
-int main() {
-    /*The variables are, in order, worst error, current error, standard result (from standard
-    c library), our result, the index of the worst error, a temporary variable (which will
-    be explained later). Current error is 1 - (our result divided by the standard result).*/
-    double worstError = 0, currError, stdResult, ourResult, index, tmp;
+/*The function that will be called to compare assembly and standard programs, which will also write the result in a .csv file*/
+void errorTestCase(double tmp, double *worstError, double *index, FILE *fp);
 
-    /*This block is for creating a file with an appropriate name. The name of the test and the
-    current time stamp is used to create a unique and easy to understand file identifier.*/
-    char fname[50];
-    struct tm *gtime;
-    time_t now;
-    time(&now);
-    strftime(fname, sizeof(fname), "./Quick_Test_Error_%Y-%m-%d_%H:%M:%S.csv", localtime(&now));
+int main() {
+    /*The variables are, in order, worst error, the index of the worst error, a temporary
+    variable for test cases generated from the variable; such as i, i +- epsilon. */
+    double worstError = 0, index, tmp;
+
+    /* Creating the output file */
     FILE *fp;
-    fp = fopen(fname,"w");
-    /* END OF BLOCK */
+    fp = createFile("Quick_Test_Error_");
 
     /*This is the top row of our csv file which will record all tests according to the used
     program's specifications (speed only records speed, error only records error, both records
@@ -32,60 +27,54 @@ int main() {
     /* Critical values are tested here. There are a total of 1420 * 4 * 3 = 17040 */
     for (double i = -711; i < 711; i += 0.25) {
 
-        /* critical value i */
-        /* first we calculate the result for our function */
-        ourResult = era_sinh(i);
-        /* then we calculate the result for the standard function */
-        stdResult = sinh(i);
-        /* the error rate is our result divided by the standard result */
-        currError = 1-ourResult/stdResult;
-        /* a comparison is made to see if the current error is so far the worst one */
-        if (currError > worstError) {
-            /* if it is the worst case so far, the worst error and the index is updated */
-            worstError = currError;
-	    index = i;
-        }
-        /* the result of each test is written in the previously created file */
-        fprintf(fp, "%.17g,%e,%e,%e\n", i, ourResult, stdResult, currError);
-
-        /* critical value i + epsilon, same procedure as above */
-        /* tmp is used to hold the values that are right next to i, without disrupting the
+	/* tmp is used to hold the values that are right next to i, without disrupting the
         for loop */
-        tmp = nextafter((double)i, (double)i+1);
-        ourResult = era_sinh(tmp);
-        stdResult = sinh(tmp);
-        currError = 1-ourResult/stdResult;
-        if (currError > worstError) {
-            worstError = currError;
-	    index = tmp;
-        }
-        fprintf(fp, "%.17g,%e,%e,%e\n", tmp, ourResult, stdResult, currError);
+	/* testing for critical value i */
+        tmp = i;
+        errorTestCase(tmp, &worstError, &index, fp);
+	
+        /* critical value i + epsilon */
+        tmp = nextafter(i, 712);
+        errorTestCase(tmp, &worstError, &index, fp);
 
-        /* critical value i - epsilon, same procedure as above */
-        tmp = nextafter((double)i, (double)i-1);
-        ourResult = era_sinh(tmp);
-        stdResult = sinh(tmp);
-        currError = 1-ourResult/stdResult;
-        if (currError > worstError) {
-            worstError = currError;
-	    index = tmp;
-        }
-        fprintf(fp, "%.17g,%e,%e,%e\n", tmp, ourResult, stdResult, currError);
+        /* critical value i - epsilon */
+        tmp = nextafter(i, -712);
+        errorTestCase(tmp, &worstError, &index, fp);
     }
-    /* 1500 random values between 0 and 710 are tested here, same procedure as above */
+
+    /* 1500 random values between 0 and 712 are tested here */
     for (int i = 0; i < 1500; i++) {
-	tmp = (double)rand()/(double)(RAND_MAX/710);
-        ourResult = era_sinh(tmp);
-        stdResult = sinh(tmp);
-        currError = 1-ourResult/stdResult;
-        if (currError > worstError) {
-            worstError = currError;
-	    index = tmp;
-        }
-        fprintf(fp, "%.17g,%e,%e,%e\n", tmp, ourResult, stdResult, currError);
+        tmp = (double)rand()/(double)(RAND_MAX/712);
+        errorTestCase(tmp, &worstError, &index, fp);
     }
+
+    /* 1500 random values between -712 and 0 are tested here */
+    for (int i = 0; i < 1500; i++) {
+        tmp = (double)rand()/(double)(RAND_MAX/712);
+        tmp = -tmp;
+        errorTestCase(tmp, &worstError, &index, fp);
+    }
+
     /* The file is closed to avoid leaks and to make sure the whole stream is written */
     fclose(fp);
+
     /* The worst error rate and its index is displayed on the console */
     printf("Worst error is %e at %e\n", worstError, index);
+}
+
+void errorTestCase(double tmp, double *worstError, double *index, FILE *fp) {
+    /* first we calculate the result for our function */
+    double ourResult = era_sinh(tmp);
+    /* then we calculate the result for the standard function */
+    double stdResult = sinh(tmp);
+    /* the error rate is our result divided by the standard result */
+    double currError = 1 - (ourResult / stdResult);
+    /* a comparison is made to see if the current error is so far the worst one */
+    if (currError > *worstError) {
+        /* if it is the worst case so far, the worst error and the index is updated */
+        *worstError = currError;
+	*index = tmp;
+    }
+        /* the result of each test is written in the previously created file */
+        fprintf(fp, "%.17g,%e,%e,%e\n", tmp, ourResult, stdResult, currError);
 }
