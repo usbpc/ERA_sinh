@@ -4,7 +4,7 @@
 extern double era_sinh(double x);
 int main(int argc, char *argv[]) {
     //double d = atof(argv[1]);
-    double d = -10.0;
+    double d = 710.0;
     //int loops = 1;
     double ms, s;
     //do {

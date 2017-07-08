@@ -6,7 +6,7 @@
 
 /*The assembly program that will be tested and compared against the standard library function*/
 
-int main() {
+void selectttest() {
     /*The variables are, in order, worst speed, the index of the worst speed, worst error, the 
     index of the worst error, a temporary variable for test cases generated from the variable;
     such as i, i +- epsilon. */
