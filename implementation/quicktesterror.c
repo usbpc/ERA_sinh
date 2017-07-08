@@ -5,7 +5,7 @@
 #include "functions.h"
 
 /*The assembly program that will be tested and compared against the standard library function*/
-extern double era_sinh(double x);
+//extern double era_sinh(double x);
 
 /*The function that will be called to compare assembly and standard programs, which will also write the result in a .csv file*/
 void errorTestCase(double tmp, double *worstError, double *index, FILE *fp);

@@ -5,7 +5,6 @@
 #include "functions.h"
 
 /*The assembly program that will be tested and compared against the standard library function*/
-extern double era_sinh(double x);
 
 int main() {
     /*The variables are, in order, worst speed, the index of the worst speed, worst error, the 

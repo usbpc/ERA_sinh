@@ -4,13 +4,14 @@
 #include <math.h>
 #include <time.h>
 #include <string.h>
+#include "functions.h"
 
 /*The assembly program that will be tested and compared against the standard library function*/
-extern double era_sinh(double x);
+//extern double era_sinh(double x);
 
-double era_sinh(double x) {
+/*double era_sinh(double x) {
     extern double era_sinh(double x);
-}
+}*/
 
 /*This block is for creating a file with an appropriate name. The name of the test and the
 current time stamp is used to create a unique and easy to understand file identifier.*/
