@@ -18,5 +18,9 @@ For example if you want to compile a programm in test.c you could use the follow
 
 gcc -std=c11 -m64 -o test test.c sinh.o -lm
 
-Our included test programm goes through the values from -710 to 710 in steps of 0.25 and prints the input, our result, 
-the result of the build in C function and then the diviation of our result from the C function.
+To compile our included test programm you first need to create a bin folder in the folder containing the makefile,
+then simply run the compiled sinhtest binary in the bin folder.
+
+
+Note to view the source code of sinh.asm:
+Set the Tab Size in your editor to 8 to get nicely formatted code and comments.

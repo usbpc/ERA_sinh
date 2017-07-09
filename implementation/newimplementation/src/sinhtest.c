@@ -62,9 +62,11 @@ void changeState(int input, enum States *state) {
 
 int main() {
 	enum States state = ENTRY;
+	clearScreen();
 	printf("Welcome to the test programm for our sinh() function. Please select what you want to do.\n");
 	for (;;) {
 		int input;
+		//This switch statement deals with calling the right functions and outputting the menu
 		switch(state) {
 		case ENTRY:
 			printf("0) End this programm\n");
@@ -73,9 +75,10 @@ int main() {
 			printf("3) Compare the speed of our programm to the C function with testing numbers from 0 to 710 in steps of 0.001.\n");
 			printf("4) Compare the speed of our programm to the C function with testing numbers from -710 to 0 in steps of 0.001.\n");
 			printf("5) Input a double and see the value our function and the C function returns.\n");
-			printf("6) Test all possible values between -710 to 710 and output where our function has the most relative error to the C function.\n");
+			printf("6) Test all possible values from -710 to 710 and output the value where our function has the most relative error to the C function.\n");
 			printf("Please select what you want to do: ");
 			scanf("%d", &input);
+			clearScreen();
 			changeState(input, &state);
 			break;
 		case RANGETEST:
@@ -107,7 +110,7 @@ int main() {
 			break;
 		case ALLVALUESMAYBE:
 			clearScreen();
-			printf("Are you sure? This takes a really long time!\n");
+			printf("Are you sure? This takes a really really really long time!\n");
 			printf("0) No please take me back to the main menu.\n");
 			printf("1) Yes, I know what I am doing.\n");
 			printf("Please select what you want to do: ");
@@ -116,7 +119,7 @@ int main() {
 			clearScreen();
 			break;
 		case ALLVALUES:
-			printf("Here we go...\n");
+			printf("Well you wanted it, here we go...\n");
 			testAllValues(-710, 710);
 			changeState(-1, &state);
 			break;

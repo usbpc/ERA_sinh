@@ -3,14 +3,10 @@
 #include <time.h>
 #include <string.h>
 
-/*Writes the given String to STDOUT and then reads a string of max 100 chars from STDIN and returns a pointer to it*/
-char * readStringFromSTDIN(const char* input) {
-	printf("%s", input);
-	char *read = malloc(100*sizeof(char));
-	scanf("%[^\n]s",read);
-	return read;
-}
 
+/*This function expects a string to output before requesting a double from stdin
+ *and returns the double it gets.
+ */
 double readDoubleFromSTDIN(const char* input) {
 	double read;
 	printf("%s", input);
@@ -19,7 +15,8 @@ double readDoubleFromSTDIN(const char* input) {
 }
 
 /*This block is for creating a file with an appropriate name. The name of the test and the
-current time stamp is used to create a unique and easy to understand file identifier.*/
+ *current time stamp is used to create a unique and easy to understand file identifier.
+ */
 FILE* createFile(char *input) {
     /*First, we create a time stamp*/
     struct tm *gtime;
