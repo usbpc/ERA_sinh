@@ -34,7 +34,7 @@ void selecttest() {
     /* The file is closed to avoid leaks and to make sure the whole stream is written */
     fclose(fp);
     /* The worst error rate and its index is displayed on the console */
-    printf("Worst error is %e at %e\n", worstError, indexError);
+    printf("The worst diviation from the c sinh function is %e with input %e\n", worstError, indexError);
     /* The worst speed difference and its index is displayed on the console */
-    printf("Worst speed is %e at %e\n", worstSpeed, indexSpeed);
+    //printf("the speed is %e at %e\n", worstSpeed, indexSpeed);
 }

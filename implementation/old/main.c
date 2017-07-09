@@ -10,9 +10,9 @@ enum States {
 void changeState(int input, enum States *state) {
 	switch(input) {
 		case -1:
-			printf("Press ANY key THEN ENTER to go back to the main menu");
-			scanf("\n");
-			printf("\x1b[2J\x1b[1;1H");
+			//printf("Press ANY key THEN ENTER to go back to the main menu");
+			//scanf("\n");
+			//printf("\x1b[2J\x1b[1;1H");
 			*state = ENTRY;
 			break;
 		case 0:
@@ -22,11 +22,11 @@ void changeState(int input, enum States *state) {
 			*state = SELECTTEST;
 			break;
 		default:
-			printf("I didn't recognize that option, so lets go to the beginning...\n");
-			printf("Press ANY key THEN ENTER to go back to the main menu");
-			scanf("\n");
+			//printf("I didn't recognize that option, so lets go to the beginning...\n");
+			//printf("Press ANY key THEN ENTER to go back to the main menu");
+			//scanf("\n");
 			*state = ENTRY;
-		printf("\x1b[2J\x1b[1;1H");
+		//printf("\x1b[2J\x1b[1;1H");
 
 
 	}

@@ -1,0 +1,22 @@
+To compile our implementation of the sinh function use the nasm (version 2.11.08) as follows:
+
+$ nasm -f elf64 -o sinh.o sinh.asm
+
+
+To use our implementation of the sinh function include the sinh.h header file like this:
+
+#include "sinh.h"
+
+Our signature is:
+
+double era_sinh(double x)
+
+so we expect a double value as input and return another double value.
+
+When compiling your code don't forget to inculde the sinh.o object file generate by nasm for linking. 
+For example if you want to compile a programm in test.c you could use the following command:
+
+gcc -std=c11 -m64 -o test test.c sinh.o -lm
+
+Our included test programm goes through the values from -710 to 710 in steps of 0.25 and prints the input, our result, 
+the result of the build in C function and then the diviation of our result from the C function.

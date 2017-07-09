@@ -73,5 +73,5 @@ void testCase(double tmp, double *worstSpeed, double *indexSpeed, double *worstE
     }
     /* the result of each test is written in the previously created file */
     fprintf(fp, "%.17g,%e,%e,%e,", tmp, ourResult, stdResult, currError);
-    fprintf(fp, "%e,%e,%e\n", ourSpeed, stdSpeed, (ourSpeed - stdSpeed));
+    //fprintf(fp, "%e,%e,%e\n", ourSpeed, stdSpeed, (ourSpeed - stdSpeed));
 }
