@@ -1,0 +1,155 @@
+% Verwendet: Beamer-Class
+% https://en.wikibooks.org/wiki/LaTeX/Presentations
+% http://mirrors.ibiblio.org/CTAN/macros/latex/contrib/beamer/doc/beameruserguide.pdf
+% 
+% Sehr wichtig: jede Folie ist in \begin{frame} ... \end{frame} eingeschlossen.
+% lstlisting(also Source Code) kann nur in Folien verwendet werden, wenn ihr als
+% Parameter \begin{frame}[fragile] angebt! Ansonsten kompiliert das Dokument nicht, und ihr habt keine Ahnung warum :/
+
+\PassOptionsToPackage{table}{xcolor}
+\documentclass[mathserif]{beamer}
+\usetheme{CambridgeUS}
+
+\useinnertheme{circles}
+\usepackage[ngerman]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{listings}
+\usepackage{tabularx}
+\usepackage{graphicx}
+\definecolor{gray1}{gray}{0.90}
+\definecolor{gray2}{gray}{0.95}
+\definecolor{myred}{rgb}{0.64, 0, 0}
+\setbeamertemplate{navigation symbols}{} %Lässt hässliche Navigationssysmbole verschwinden
+\title{Implementierung des Sinh}
+\subtitle{in x86-Assembly}
+\author
+{Kevin Holm, Deniz Candas, Jakob Mezger}
+\date{09.08.2017}
+\lstdefinelanguage
+[x64]{Assembler}     % add a "x64" dialect of Assembler
+[x86masm]{Assembler} % based on the "x86masm" dialect
+% with these extra keywords:
+{morekeywords={CDQE,CQO,CMPSQ,CMPXCHG16B,JRCXZ,LODSQ,MOVSXD, %
+		POPFQ,PUSHFQ,SCASQ,STOSQ,IRETQ,RDTSCP,SWAPGS, %
+		rax,rdx,rcx,rbx,rsi,rdi,rsp,rbp, %
+		r8,r8d,r8w,r8b,r9,r9d,r9w,r9b, %
+		r10,r10d,r10w,r10b,r11,r11d,r11w,r11b, %
+		r12,r12d,r12w,r12b,r13,r13d,r13w,r13b, %
+		r14,r14d,r14w,r14b,r15,r15d,r15w,r15b}} % etc.
+\lstdefinestyle{myPseudo}{language=Java, basicstyle=\tiny, numbers=left, keywordstyle=\color{myred}, frame=tb, commentstyle=\color{blue!70}, xleftmargin = 0.1\textwidth, xrightmargin = 0.1\textwidth}
+\lstdefinestyle{myAssembly}{language=[x64]Assembler, basicstyle=\tiny, numbers=left, keywordstyle=\color{myred}, frame=tb, commentstyle=\color{gray}, xleftmargin = 0.1\textwidth, xrightmargin = 0.1\textwidth}
+
+
+\begin{document}
+	
+	\frame{\titlepage}
+	\begin{frame}
+		\tableofcontents
+	\end{frame}
+	\begin{frame}
+		\section{Aufgabe}
+		\frametitle{Aufgabe}
+		\begin{itemize}
+			\item Implementierung des Sinus Hyperbolicus
+			%Sinh ist eine Hyperbel-Funktion
+			\item Erlaubte Befehle
+			\begin{itemize}
+				\item x87 FPU-Befehle für Grundrechenarten, Negation
+				\item Speicherverwaltungsbefehle
+			\end{itemize}
+			%Offensichtlich müssen wir uns an die nasm-Syntax und die Linux 64-Bit-ABI halten  
+			%Ein-/Ausgabe: IEEE 754 Double Precision 64-Bit
+			\item C-Rahmenprogramm
+			\begin{itemize}
+				\item Validierung
+				\item Leistungsmessung 
+				\item Vergleich mit Funktion der Standardbibliothek
+			\end{itemize}
+		\end{itemize}
+	\end{frame}
+	\begin{frame}
+		\section{Verwendete Umgebung}
+		\frametitle{Verwendete Umgebung}
+		\begin{itemize}
+			\item Betriebssystem: Linux Ubuntu 64-Bit LTS 16.04
+			\item Assembly-Syntax: nasm
+		\end{itemize}
+	\end{frame}
+	\begin{frame}
+		\section{Verwendeter Ansatz}
+		\frametitle{Verwendeter Ansatz}
+		\framesubtitle{Und dessen Vor- und Nachteile}
+		
+		\begin{itemize}
+			\item Reihenentwicklung: \begin{math}sinh(x) = \sum\limits_{n=0}^{\infty} \frac{x^{2n+1}}{(2n+1)!} \end{math}
+			\item Gesteigerte Effizienz durch Rekursion: $term_{0} = x, \ term_{n+1}(x) = term_{n}(x) \times \frac{x}{n+1} \times \frac{x}{n+2}$
+		\end{itemize}
+	% Beliebige Genauigkeit im Gegensatz zu Berechnung mit Lookup-Table
+	% Speicherbedarf unproblematisch, Geschwindigkeit schwer zu beurteilen, Maximale Abweichung von 5% definitiv erfüllt -> ausschlaggebend: einfache Implementierung
+	\begin{center}
+		\rowcolors{1}{gray1}{gray2}
+		\begin{tabularx}{\textwidth}{*{2}{|X}|}
+			\hline
+			\textbf{Vorteile} & \textbf{Nachteile} \\
+			\hline 
+			\hline
+			Beliebige Genauigkeit & Viele Schleifendurchläufe für \newline genaue Werte \\
+			\hline
+			Rekursion $\rightarrow$ Einfache \newline Implementierung  & Rekursion $\rightarrow$ Große Stack-\newline Auslastung \\
+			\hline
+			Wenige Speicherzugriffe & Rechenintensiv \\
+			\hline
+		\end{tabularx}
+	\end{center}
+	\end{frame}
+	\begin{frame}[fragile]
+		\section{Code Review}
+		\frametitle{Code Review}
+		\framesubtitle{Pseudo Code}
+		\subsection{Pseudo Code}
+%Auf Abbruchbedingung ("if result is not precise enough") eingehen: (45+5|x|)/8, dabei höchstens 489(für Werte > 710 ||  < -710) mal durchlaufen
+\begin{lstlisting}[style=myPseudo, title=Sinh in Pseudocode]
+sinh(double x):
+double i = 1
+double result = x
+double term = x
+
+loop:
+i = i + 1;
+term = term / i
+term = term * x
+
+i = i + 1;
+term = term / i
+term = term * x
+
+result = result + term;
+if result is not precise enough jmp loop
+
+return result
+\end{lstlisting}
+$term_{0} = x, \ term_{n+1}(x) = term_{n}(x) \times \frac{x}{n+1} \times \frac{x}{n+2}$
+\end{frame}
+\begin{frame}[fragile]
+\frametitle{Code Review}
+\framesubtitle{Markante Stellen im Code}
+\subsection{Markante Stellen im Code}
+
+\begin{lstlisting}[style=myAssembly, title=sinh.asm vor Aufruf der Hauptschleife, firstnumber = 22]
+fld st0				;st0 = x, st1 = x
+
+fabs				;st0 = |x|
+
+fdiv st1, st0			;st1 = x/|x|, either 1 or -1
+\end{lstlisting}
+$\forall x \in \mathbb{R}: sinh(-x) = -sinh(x)$. Also kann man den sinh nur für positive Werte berechnen...
+%TODO Kevin fragen, wieso 2 mal fincstp
+\begin{lstlisting}[style=myAssembly, title=sinh.asm nach Verlassen der Hauptschleife, firstnumber = 82]
+fincstp
+fincstp				;st6= previous, st7 = i, st0 = result, 
+				;st1 = 1, st2 = x, st3 = sign
+fmul st0, st3			;st0 = result * sign
+\end{lstlisting}
+...und nach der Berechnung das Vorzeichen anpassen.
+\end{frame}
+\end{document}
