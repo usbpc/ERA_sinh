@@ -20,7 +20,7 @@
 \definecolor{gray2}{gray}{0.95}
 \definecolor{myred}{rgb}{0.64, 0, 0}
 \setbeamertemplate{navigation symbols}{} %Lässt hässliche Navigationssysmbole verschwinden
-\title{Implementierung des Sinh}
+\title{Implementierung des Sinus Hyperbolicus}
 \subtitle{in x86-Assembly}
 \author
 {Kevin Holm, Deniz Candas, Jakob Mezger}
@@ -79,10 +79,10 @@
 		\section{Verwendeter Ansatz}
 		\frametitle{Verwendeter Ansatz}
 		\framesubtitle{Und dessen Vor- und Nachteile}
-		
+		%Gesteigerte Effizienz durch Rekursion, da keine Potenzierungen bzw. Fakultäten berechnet werden
 		\begin{itemize}
 			\item Reihenentwicklung: \begin{math}sinh(x) = \sum\limits_{n=0}^{\infty} \frac{x^{2n+1}}{(2n+1)!} \end{math}
-			\item Gesteigerte Effizienz durch Rekursion: $term_{0} = x, \ term_{n+1}(x) = term_{n}(x) \times \frac{x}{n+1} \times \frac{x}{n+2}$
+			\item Gesteigerte Effizienz durch Rekursion: $sinh(x) = \sum\limits_{n=0}^{\infty} term_{n}, \newline term_{0} = x, \ term_{n+1}(x) = term_{n}(x) \times \frac{x}{n+1} \times \frac{x}{n+2}$
 		\end{itemize}
 	% Beliebige Genauigkeit im Gegensatz zu Berechnung mit Lookup-Table
 	% Speicherbedarf unproblematisch, Geschwindigkeit schwer zu beurteilen, Maximale Abweichung von 5% definitiv erfüllt -> ausschlaggebend: einfache Implementierung
@@ -95,9 +95,9 @@
 			\hline
 			Beliebige Genauigkeit & Viele Schleifendurchläufe für \newline genaue Werte \\
 			\hline
-			Rekursion $\rightarrow$ Einfache \newline Implementierung  & Rekursion $\rightarrow$ Große Stack-\newline Auslastung \\
+			Rekursion $\rightarrow$ Einfache \newline Implementierung  & Rechenintensiv \\
 			\hline
-			Wenige Speicherzugriffe & Rechenintensiv \\
+			Wenige Speicherzugriffe &  \\
 			\hline
 		\end{tabularx}
 	\end{center}
@@ -108,6 +108,8 @@
 		\framesubtitle{Pseudo Code}
 		\subsection{Pseudo Code}
 %Auf Abbruchbedingung ("if result is not precise enough") eingehen: (45+5|x|)/8, dabei höchstens 489(für Werte > 710 ||  < -710) mal durchlaufen
+%Erklären, dass Pseudo-Code gewählt wurde, um Programm leicht erklären zu können, und nur auf die relevantesten Stellen
+%der tatsächlichen Implementierung eingegangen wird
 \begin{lstlisting}[style=myPseudo, title=Sinh in Pseudocode]
 sinh(double x):
 double i = 1
@@ -128,13 +130,17 @@ if result is not precise enough jmp loop
 
 return result
 \end{lstlisting}
-$term_{0} = x, \ term_{n+1}(x) = term_{n}(x) \times \frac{x}{n+1} \times \frac{x}{n+2}$
+$sinh(x) = \sum\limits_{n=0}^{\infty} term_{n}, \ term_{0} = x, \ term_{n+1}(x) = term_{n}(x) \times \frac{x}{n+1} \times \frac{x}{n+2}$
 \end{frame}
+% Erklären, wieso gerade diese zwei Stellen für Code Review gewählt
+% -main loop ist durch Pseudocode bereits gut beschrieben
+% -Initialisierung, Annahme und Ausgabe von Werten ist Standardprozedere, daher kaum nennenswert
+% -> beschriebene Stellen sind am interessantesten
 \begin{frame}[fragile]
 \frametitle{Code Review}
-\framesubtitle{Markante Stellen im Code}
-\subsection{Markante Stellen im Code}
-
+\framesubtitle{Negative Eingabewerte}
+\subsection{Negative Eingabewerte}
+$\forall x \in \mathbb{R}: sinh(-x) = -sinh(x)$. Also kann man den sinh für den Betrag der Eingabe berechnen...
 \begin{lstlisting}[style=myAssembly, title=sinh.asm vor Aufruf der Hauptschleife, firstnumber = 22]
 fld st0				;st0 = x, st1 = x
 
@@ -142,14 +148,44 @@ fabs				;st0 = |x|
 
 fdiv st1, st0			;st1 = x/|x|, either 1 or -1
 \end{lstlisting}
-$\forall x \in \mathbb{R}: sinh(-x) = -sinh(x)$. Also kann man den sinh nur für positive Werte berechnen...
 %TODO Kevin fragen, wieso 2 mal fincstp
-\begin{lstlisting}[style=myAssembly, title=sinh.asm nach Verlassen der Hauptschleife, firstnumber = 82]
-fincstp
+...und nach der Berechnung das Vorzeichen anpassen.
+\begin{lstlisting}[style=myAssembly, title=sinh.asm nach Verlassen der Hauptschleife, firstnumber = 83]
 fincstp				;st6= previous, st7 = i, st0 = result, 
 				;st1 = 1, st2 = x, st3 = sign
 fmul st0, st3			;st0 = result * sign
 \end{lstlisting}
-...und nach der Berechnung das Vorzeichen anpassen.
+\end{frame}
+%TODO Bestimmung der Anzahl der Schleifendurchläufe im Code
+%darauf eingehen, dass x > 710 -> sinh(x) = infty, x < -710 -> sinh(x) = -infty, ceil((|x| * 5) / 8 + 45) = 489 -> höchstens 489 zuweisen verhindert, dass unnötig langes Durchlaufen der Schleife für |x| > 710,
+%Ergebnis aber weiterhin infinity (kleinste Zahl, für die Ergebnis = infinity)
+%Auf effiziente Berechnung hinweisen - Bitshift für Division durch 8, Bitshift + Addition für Multiplikation mit 5
+\begin{frame}[fragile]
+\frametitle{Code Review}
+\framesubtitle{Anzahl Durchläufe der Hauptschleife}
+\subsection{Anzahl Durchläufe der Hauptschleife}
+\begin{itemize}
+	\item Beobachtung: Größe der Eingabe und benötigte Schleifendurchläufe für genaues Resultat korrelieren
+	\item Durch Ausprobieren: $45 + \frac{5|x|}{8}$ Durchläufe bieten guten Tradeoff
+\end{itemize}
+\begin{lstlisting}[style=myAssembly, title=sinh.asm Bestimmung Anzahl Schleifendurchläufe, firstnumber = 37]
+fld st0				;I can only get a 64 Bit integer 
+				;out of the FPU with popping,
+				;so duplicating x here to not loose it
+fistp qword [rsp-8]		;get x as integer into memory
+fwait				;wait until that is done
+mov rcx, qword [rsp-8]		;then get that integer into rcx
+shr rcx, 3			;divide it by 8
+mov rax, rcx			;save that into rax
+shl rcx, 2			;now multiply rcx with 4
+add rcx, rax			;add rax to rcx
+add rcx, 45			;add 45 to rcx, so now rcx = 45+5x/8
+cmp rcx, 489			;compare rcx with 489
+jbe .cont			;skip the next instruction if rcx <= 489
+mov rcx, 489			;if rcx was bigger, set it to 489, 
+				;this is done so that inputs 
+				;> 710 don't run forever 
+				;and still output +/- infinity
+\end{lstlisting}
 \end{frame}
 \end{document}
