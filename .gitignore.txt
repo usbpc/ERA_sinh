@@ -1,0 +1,3 @@
+#Ignore all files in the folder 'Praesentation' (contains all the LaTeX dump files)
+Praesentation/*
+#Except the .tex file and the generated pdf
