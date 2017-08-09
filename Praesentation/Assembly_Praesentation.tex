@@ -25,6 +25,7 @@
 \author
 {Kevin Holm, Deniz Candas, Jakob Mezger}
 \date{09.08.2017}
+\DeclareMathOperator{\term}{term}
 \lstdefinelanguage
 [x64]{Assembler}     % add a "x64" dialect of Assembler
 [x86masm]{Assembler} % based on the "x86masm" dialect
@@ -35,13 +36,12 @@
 		r8,r8d,r8w,r8b,r9,r9d,r9w,r9b, %
 		r10,r10d,r10w,r10b,r11,r11d,r11w,r11b, %
 		r12,r12d,r12w,r12b,r13,r13d,r13w,r13b, %
-		r14,r14d,r14w,r14b,r15,r15d,r15w,r15b}} % etc.
+		r14,r14d,r14w,r14b,r15,r15d,r15w,r15b,fistp}} % etc.
 \lstdefinestyle{myPseudo}{language=Java, basicstyle=\tiny, numbers=left, keywordstyle=\color{myred}, frame=tb, commentstyle=\color{blue!70}, xleftmargin = 0.1\textwidth, xrightmargin = 0.1\textwidth}
 \lstdefinestyle{myAssembly}{language=[x64]Assembler, basicstyle=\tiny, numbers=left, keywordstyle=\color{myred}, frame=tb, commentstyle=\color{gray}, xleftmargin = 0.1\textwidth, xrightmargin = 0.1\textwidth}
 
 
 \begin{document}
-	
 	\frame{\titlepage}
 	\begin{frame}
 		\tableofcontents
@@ -52,6 +52,9 @@
 		\begin{itemize}
 			\item Implementierung des Sinus Hyperbolicus
 			%Sinh ist eine Hyperbel-Funktion
+			%Keine weitere Spezifizierung; Rücksprache mit Tutor: unter 5% Abweichung
+			%Geschwindigkeit, Speicherverbrauch zweitrangig
+			\includegraphics[width=4cm]{C:/Users/jakob/Pictures/sinh_plot.png}
 			\item Erlaubte Befehle
 			\begin{itemize}
 				\item x87 FPU-Befehle für Grundrechenarten, Negation
@@ -76,13 +79,24 @@
 		\end{itemize}
 	\end{frame}
 	\begin{frame}
-		\section{Verwendeter Ansatz}
-		\frametitle{Verwendeter Ansatz}
-		\framesubtitle{Und dessen Vor- und Nachteile}
+		\section{Ansatz 1: Lookup Table}
+		\frametitle{Ansatz 1: Lookup Table}
+		\framesubtitle{Und deren Vor- und Nachteile}
+		\begin{itemize}
+			\item Stützstellen für Interpolation werden in Tabelle gespeichert
+			\item Stützstellen können z.B. ganzzahlige Werte sein
+			\item Werte zwischen Stützstellen lassen sich mit Polynom annähern
+			%Funktion mithilfe von Mathematica herausgefunden
+		\end{itemize}
+	\end{frame}
+	\begin{frame}
+		\section{Ansatz 2: Reihenentwicklung}
+		\frametitle{Ansatz 2: Reihenentwicklung}
+		\framesubtitle{Und deren Vor- und Nachteile}
 		%Gesteigerte Effizienz durch Rekursion, da keine Potenzierungen bzw. Fakultäten berechnet werden
 		\begin{itemize}
-			\item Reihenentwicklung: \begin{math}sinh(x) = \sum\limits_{n=0}^{\infty} \frac{x^{2n+1}}{(2n+1)!} \end{math}
-			\item Gesteigerte Effizienz durch Rekursion: $sinh(x) = \sum\limits_{n=0}^{\infty} term_{n}, \newline term_{0} = x, \ term_{n+1}(x) = term_{n}(x) \times \frac{x}{n+1} \times \frac{x}{n+2}$
+			\item Reihenentwicklung: \begin{math}\sinh(x) = \sum\limits_{n=0}^{\infty} \frac{x^{2n+1}}{(2n+1)!} \end{math}
+			\item Gesteigerte Effizienz durch Rekursion: $\sinh(x) = \sum\limits_{n=0}^{\infty} \term_{n}, \newline \term_{0} = x, \ \term_{n+1}(x) = \term_{n}(x) \times \frac{x}{2n} \times \frac{x}{2n+1}$
 		\end{itemize}
 	% Beliebige Genauigkeit im Gegensatz zu Berechnung mit Lookup-Table
 	% Speicherbedarf unproblematisch, Geschwindigkeit schwer zu beurteilen, Maximale Abweichung von 5% definitiv erfüllt -> ausschlaggebend: einfache Implementierung
@@ -93,7 +107,7 @@
 			\textbf{Vorteile} & \textbf{Nachteile} \\
 			\hline 
 			\hline
-			Beliebige Genauigkeit & Viele Schleifendurchläufe für \newline genaue Werte \\
+			Beliebige Genauigkeit \newline(Interpolation nicht) & Viele Schleifendurchläufe für \newline genaue Werte \\
 			\hline
 			Rekursion $\rightarrow$ Einfache \newline Implementierung  & Rechenintensiv \\
 			\hline
@@ -117,20 +131,20 @@ double result = x
 double term = x
 
 loop:
-i = i + 1;
-term = term / i
-term = term * x
+i++
+term /= i
+term *= x
 
-i = i + 1;
-term = term / i
-term = term * x
+i++
+term /= i
+term *= x
 
 result = result + term;
 if result is not precise enough jmp loop
 
 return result
 \end{lstlisting}
-$sinh(x) = \sum\limits_{n=0}^{\infty} term_{n}, \ term_{0} = x, \ term_{n+1}(x) = term_{n}(x) \times \frac{x}{n+1} \times \frac{x}{n+2}$
+$\sinh(x) = \sum\limits_{n=0}^{\infty} \term_{n}, \ \term_{0} = x, \ \term_{n+1}(x) = \term_{n}(x) \times \frac{x}{2n} \times \frac{x}{2n+1}$
 \end{frame}
 % Erklären, wieso gerade diese zwei Stellen für Code Review gewählt
 % -main loop ist durch Pseudocode bereits gut beschrieben
@@ -140,7 +154,7 @@ $sinh(x) = \sum\limits_{n=0}^{\infty} term_{n}, \ term_{0} = x, \ term_{n+1}(x) 
 \frametitle{Code Review}
 \framesubtitle{Negative Eingabewerte}
 \subsection{Negative Eingabewerte}
-$\forall x \in \mathbb{R}: sinh(-x) = -sinh(x)$. Also kann man den sinh für den Betrag der Eingabe berechnen...
+$\forall x \in \mathbb{R}: \sinh(-x) = -\sinh(x)$. Also kann man den sinh für den Betrag der Eingabe berechnen...
 \begin{lstlisting}[style=myAssembly, title=sinh.asm vor Aufruf der Hauptschleife, firstnumber = 22]
 fld st0				;st0 = x, st1 = x
 
@@ -151,7 +165,7 @@ fdiv st1, st0			;st1 = x/|x|, either 1 or -1
 %TODO Kevin fragen, wieso 2 mal fincstp
 ...und nach der Berechnung das Vorzeichen anpassen.
 \begin{lstlisting}[style=myAssembly, title=sinh.asm nach Verlassen der Hauptschleife, firstnumber = 83]
-fincstp				;st6= previous, st7 = i, st0 = result, 
+fincstp				;st6 = previous, st7 = i, st0 = result, 
 				;st1 = 1, st2 = x, st3 = sign
 fmul st0, st3			;st0 = result * sign
 \end{lstlisting}

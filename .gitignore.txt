@@ -1,3 +1,12 @@
-#Ignore all files in the folder 'Praesentation' (contains all the LaTeX dump files)
-Praesentation/*
-#Except the .tex file and the generated pdf
+#Ignore all types of LaTeX dump files
+*.aux
+*.nav
+*.out
+*.snm
+*.synctex
+*.toc
+*.vrb
+
+#Explicitly ignore Assembly_Praesentation (no file ending, therefore could
+#not be excluded by naming file ending)
+Praesentation/Assembly_Praesentation
